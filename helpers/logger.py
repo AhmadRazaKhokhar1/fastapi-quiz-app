@@ -1,5 +1,4 @@
 import logging
-import auxiliary
 
 # create logger instance with minimum of DEBUG
 logger = logging.getLogger("global_logger")

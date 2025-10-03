@@ -5,7 +5,7 @@ import models
 from database import engine, db_dependency
 from auth import router as auth_router, get_current_user
 from starlette import status
-import logging
+from helpers.logger import logger
 
 # This will create an app just like we do with expressJs const app = express()
 app = FastAPI()
@@ -49,7 +49,7 @@ async def get_question_by_id(question_id:int, db: db_dependency):
 async def get_choices_by_question_id(question_id:int, db: db_dependency):
     result = db.query(models.Choices).filter(models.Choices.question_id == question_id).all()
     if not result:
-        logging.debug("No choices found", result)
+        logger.debug(f"No choices found {result}")
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No choices found.")
     return result
 
@@ -58,5 +58,5 @@ async def get_user(user:user_dependency):
     if user is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Authentication failed.")
     else:
-        logging.info(user)
+        logger.info(user)
         return { "user" : user }
