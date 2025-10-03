@@ -5,12 +5,13 @@ import models
 from database import engine, db_dependency
 from auth import router as auth_router, get_current_user
 from starlette import status
+from starlette.middleware.base import BaseHTTPMiddleware
 from helpers.logger import logger
-from middlewares.tracker_middleware import register_tracker_middleware
+from middlewares.tracker_middleware import track_current_request
 # This will create an app just like we do with expressJs const app = express()
 app = FastAPI()
 app.include_router(router=auth_router)
-register_tracker_middleware(app)
+app.add_middleware(BaseHTTPMiddleware, dispatch=track_current_request)
 # This will create all the tables and columns inside Postgres
 models.Base.metadata.create_all(bind=engine)
 
