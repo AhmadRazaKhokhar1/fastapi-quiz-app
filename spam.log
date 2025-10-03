@@ -1,5 +1,0 @@
-2025-10-03 17:19:20,929 - global_logger - DEBUG - No choices found []
-2025-10-03 17:34:35,163 - global_logger - DEBUG - No choices found []
-2025-10-03 17:44:43,517 - global_logger - INFO - {'path': '/choices/1', 'method': 'GET'}
-2025-10-03 17:44:54,024 - global_logger - INFO - {'path': '/choices/1', 'method': 'GET'}
-2025-10-03 17:45:05,979 - global_logger - INFO - {'path': '/user', 'method': 'GET'}
