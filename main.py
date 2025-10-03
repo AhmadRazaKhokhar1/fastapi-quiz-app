@@ -6,14 +6,14 @@ from database import engine, db_dependency
 from auth import router as auth_router, get_current_user
 from starlette import status
 from helpers.logger import logger
-
+from middlewares.tracker_middleware import register_tracker_middleware
 # This will create an app just like we do with expressJs const app = express()
 app = FastAPI()
-
+app.include_router(router=auth_router)
+register_tracker_middleware(app)
 # This will create all the tables and columns inside Postgres
 models.Base.metadata.create_all(bind=engine)
 
-app.include_router(router=auth_router)
 # These are the base classes or Pydantic Models
 class ChoiceBase(BaseModel):
     choice_text: str
