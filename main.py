@@ -2,8 +2,10 @@ from fastapi import FastAPI, HTTPException, Depends
 from pydantic import BaseModel
 from typing import List, Annotated
 import models
-from database import engine, SessionLocal
-from sqlalchemy.orm import Session
+from database import engine, db_dependency
+from auth import router as auth_router, get_current_user
+from starlette import status
+import logging
 
 # This will create an app just like we do with expressJs const app = express()
 app = FastAPI()
@@ -11,6 +13,7 @@ app = FastAPI()
 # This will create all the tables and columns inside Postgres
 models.Base.metadata.create_all(bind=engine)
 
+app.include_router(router=auth_router)
 # These are the base classes or Pydantic Models
 class ChoiceBase(BaseModel):
     choice_text: str
@@ -19,17 +22,8 @@ class ChoiceBase(BaseModel):
 class QuestionBase(BaseModel):
     question_text: str
     choices: List[ChoiceBase]
-    
-def get_db():
-    # produces new DB session
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-        
-db_dependency = Annotated[Session, Depends(get_db)]
 
+user_dependency = Annotated[dict, Depends(get_current_user)]
 # API routes and controllers
 @app.post('/questions')
 async def create_questions(question: QuestionBase, db: db_dependency):
@@ -48,12 +42,21 @@ async def create_questions(question: QuestionBase, db: db_dependency):
 async def get_question_by_id(question_id:int, db: db_dependency):
     result = db.query(models.Questions).filter(models.Questions.id == question_id).first()
     if not result:
-        raise HTTPException(status_code=404, detail="No question found.")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No question found.")
     return result
 
 @app.get("/choices/{question_id}")
 async def get_choices_by_question_id(question_id:int, db: db_dependency):
     result = db.query(models.Choices).filter(models.Choices.question_id == question_id).all()
     if not result:
-        raise HTTPException(status_code=404, detail="No choices found.")
+        logging.debug("No choices found", result)
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No choices found.")
     return result
+
+@app.get("/user", status_code=status.HTTP_200_OK)
+async def get_user(user:user_dependency):
+    if user is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Authentication failed.")
+    else:
+        logging.info(user)
+        return { "user" : user }
